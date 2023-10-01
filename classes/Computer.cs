@@ -1,3 +1,5 @@
+using System.Data;
+
 public class Computer
 {
     private int _ID;
@@ -5,7 +7,7 @@ public class Computer
 
     public int ID { get => _ID; }
 
-    public Reservation[] reservation = new Reservation[9];
+    public WorkingStationReserve[] reservation = new WorkingStationReserve[10];
 
     public bool booked = false;
 
@@ -21,14 +23,10 @@ public class Computer
         Array.Fill(reservation, null);
     }
 
-    public bool addReserv(Reservation reserv)
+    public void addReserv(WorkingStationReserve reserv)
     {
-        Reservation? checkReserv;
-        if ((checkReserv = Array.Find(reservation, r => r == null)) != null)
-        {
-            checkReserv = reserv;
-            return true;
+        for(int i=reserv.lab.Convert24h(reserv.Start); i < reserv.lab.Convert24h(reserv.End); i++){
+            reservation[i]= reserv;
         }
-        return false;
     }
 }

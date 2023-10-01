@@ -29,6 +29,8 @@ public class WorkingStationReserve : Reservation
     private Computer _workingStation;
     private Labs _lab;
 
+    public Labs lab { get => _lab; }
+
     public WorkingStationReserve(DateTime reserveStart, int reservTemp, User applicant, Computer ws, Labs lab) : base(reserveStart, reservTemp, applicant)
     {
         _workingStation = ws;

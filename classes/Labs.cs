@@ -18,6 +18,13 @@ public class Labs
     //     }
     // }
 
+    public int Convert24h(DateTime date)
+    {
+        string hour24 = date.ToString("HH:mm:ss");
+        //setting the time into 24h format
+        return int.Parse(hour24.Split(":")[0]);
+    }
+
     public Labs(int id, Computer[] workingStation)
     {
         _id = id;
@@ -25,30 +32,13 @@ public class Labs
 
     }
 
-    public Computer[]? getAllWorkingStation(int day)
-    {
-        // regulates(day);
-        Computer? bookedWs;
-        if ((bookedWs = Array.Find(_workingStation[day - 1], c => c.reservation != null)) == null)
-        {
-            return _workingStation[day - 1];
-        }
-        return null;
-    }
-
     public Computer? FindFirstComputer(int weekNumber, DateTime reserveDate, int temp)
     {
         for (int i = 0; i < _workingStation[weekNumber - 1].Length; i++)
         {
-            Reservation[] reserv = _workingStation[weekNumber - 1][i].reservation;
-            for (int j = 0; j < reserv.Length; j++)
-            {
-                if (reserv[j].End < reserveDate.AddHours(temp))
-                {
-                    return _workingStation[weekNumber - 1][i];
-                }
-            }
-            if (_workingStation[weekNumber - 1][i].reservation != null)
+            //controlla se la posizione datetime è occupata
+            int hourConverted = Convert24h(reserveDate);
+            if (_workingStation[weekNumber - 1][i].reservation[hourConverted] != null && _workingStation[weekNumber - 1][i].reservation[hourConverted + temp] != null)
             {
                 return _workingStation[weekNumber - 1][i];
             }
@@ -56,10 +46,18 @@ public class Labs
         return null;
     }
 
-    public Computer? FindDesiredComputer(string DesiredProgram, int weekNumber)
+    public Computer? FindDesiredComputer(string desiredProgram, int weekNumber, DateTime reserveDate, int temp)
     {
-        Computer? ws;
-        if ((ws = Array.Find(_workingStation[weekNumber - 1], ws => ws.getProgram(DesiredProgram))) != null) { return ws; }
+        for (int i = 0; i < _workingStation[weekNumber - 1].Length; i++)
+        {
+            //controlla se la posizione datetime è occupata
+            int hourConverted = Convert24h(reserveDate);
+            if (_workingStation[weekNumber - 1][i].getProgram(desiredProgram) && _workingStation[weekNumber - 1][i].reservation[hourConverted] != null && _workingStation[weekNumber - 1][i].reservation[hourConverted + temp] != null)
+            {
+                return _workingStation[weekNumber - 1][i];
+            }
+        }
+        
         return null;
     }
 
@@ -70,7 +68,7 @@ public class Labs
         /* User want a particular Program*/
         if (DesiredProgram != null)
         {
-            ws = FindDesiredComputer(DesiredProgram, weekNumber);
+            ws = FindDesiredComputer(DesiredProgram, weekNumber, date, temp);
             if (ws != null)
             {
                 return ws;

@@ -1,32 +1,131 @@
 using System.Data;
+using System.Net.Sockets;
 
 public class Computer
 {
-    private int _ID;
+    private string _ID;
     private string[] _programs;
 
-    public int ID { get => _ID; }
+    public string[] ProgramsList { get => _programs; }
 
-    public WorkingStationReserve[] reservation = new WorkingStationReserve[10];
-
-    public bool booked = false;
+    public string ID { get => _ID; }
 
     public bool getProgram(string program)
     {
         return Array.Find(_programs, prg => prg == program) != null;
     }
 
-    public Computer(int id, string[] programs)
+    public Computer(string id, string[] programs)
     {
         _programs = programs;
         _ID = id;
-        Array.Fill(reservation, null);
     }
 
-    public void addReserv(WorkingStationReserve reserv)
+}
+
+public class WorkingStation : Computer
+{
+
+    private int _computerUsage = 0;
+
+    private User?[] _reservation = new User[10];
+
+    //Self-Regulation
+    private void cleanReservation()
     {
-        for(int i=reserv.lab.Convert24h(reserv.Start) - 9; i < reserv.lab.Convert24h(reserv.End) - 9; i++){
-            reservation[i]= reserv;
+        int nowHour = DateTime.Now.Hour;
+        emptyTheReserv(nowHour);
+    }
+
+    private void emptyTheReserv(int hour)
+    {
+        if (hour <= 9 || hour > 18)
+        {
+            Array.Fill(_reservation, null);
+            return;
         }
+        for (int i = 0; i < hour - 9; i++)
+        {
+            _reservation[i] = null;
+        }
+    }
+    //Making reservation
+    private int AddReserv(User applicant)
+    {
+        cleanReservation();
+        for (int i = 0; i < _reservation.Length; i++)
+        {
+            if (_reservation[i] == null)
+            {
+                _reservation[i] = applicant;
+                return i + 9;
+            }
+        }
+        return -1;
+    }
+
+    private bool AddReserv(User applicant, int hour)
+    {
+        if (_reservation[hour - 9] == null) { return true; }
+        return false;
+    }
+    public int Usage { get => _computerUsage; }
+
+    public WorkingStation(string id, string[] program) : base(id, program) { Array.Fill(_reservation, null); }
+
+    public WorkingStation(WorkingStation copy) : base(copy.ID, copy.ProgramsList)
+    {
+        _computerUsage = copy._computerUsage;
+        Array.Fill(_reservation, null);
+    }
+
+    //Booking Methods
+    public int tryBook(User applicant)
+    {
+        return AddReserv(applicant);
+    }
+
+    public int tryBook(User applicant, string program)
+    {
+        if (getProgram(program))
+        {
+            return AddReserv(applicant);
+        }
+        return -1;
+    }
+
+    public bool tryBook(User applicant, string program, int hour)
+    {
+        if (getProgram(program))
+        {
+            return AddReserv(applicant, hour);
+        }
+        return false;
+    }
+    public bool tryBook(int hour, User applicant)
+    {
+        if (AddReserv(applicant, hour)) { return true; }
+        return false;
+    }
+
+    //Menu Methods
+    public void ShowAvaibility(int reservTerm)
+    {
+        Console.Write($"The computer {ID} is avaible for: ");
+        for (int i = 0; i < _reservation.Length - reservTerm; i++)
+        {
+            bool checkNextAvaibility = true;
+            for (int j = i; j < _reservation.Length; j++)
+            {
+                if (_reservation[j] != null) checkNextAvaibility = false;
+            }
+            if (checkNextAvaibility) Console.Write($"{i + 9} ");
+        }
+        Console.WriteLine();
+    }
+
+    public bool CheckCompleteAvaibility(int term, int hour)
+    {
+        return true;
     }
 }

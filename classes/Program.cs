@@ -11,6 +11,9 @@ class Program{
 
         Labs newLab= new(0, pc);
 
+        Teacher tch= new("Albus", "Silente");
+        tch.BookLab(newLab, DateTime.Parse("02/10/2023 09:00:00 AM", System.Globalization.CultureInfo.InvariantCulture), 2, tch);
+
         st.BookWs(2, "Photoshop", DateTime.Parse("02/10/2023 09:00:00 AM", System.Globalization.CultureInfo.InvariantCulture), newLab);
         st.BookWs(2, "Photoshop", DateTime.Parse("02/10/2023 09:00:00 AM", System.Globalization.CultureInfo.InvariantCulture), newLab);
         st.BookWs(2, "Photoshop", DateTime.Parse("02/10/2023 09:00:00 AM", System.Globalization.CultureInfo.InvariantCulture), newLab);
@@ -18,7 +21,7 @@ class Program{
         st.BookWs(2, "Photoshop", DateTime.Parse("02/10/2023 09:00:00 AM", System.Globalization.CultureInfo.InvariantCulture), newLab);
         st.BookWs(2, "Photoshop", DateTime.Parse("02/10/2023 11:30:00 AM", System.Globalization.CultureInfo.InvariantCulture), newLab);
         st.BookWs(2, "Photoshop", DateTime.Parse("02/10/2023 2:00:00 PM", System.Globalization.CultureInfo.InvariantCulture), newLab);
-        st.BookWs(2, "Photoshop", DateTime.Parse("03/10/2023 o9:00:00 AM", System.Globalization.CultureInfo.InvariantCulture), newLab);
+        st.BookWs(2, "Photoshop", DateTime.Parse("03/10/2023 09:00:00 AM", System.Globalization.CultureInfo.InvariantCulture), newLab);
         st.BookWs(2, null, DateTime.Parse("03/10/2023 11:00:00 AM", System.Globalization.CultureInfo.InvariantCulture), newLab);
         st.BookWs(2, null, DateTime.Parse("03/10/2023 10:00:00 AM", System.Globalization.CultureInfo.InvariantCulture), newLab);
         st.BookWs(2, null, DateTime.Parse("03/10/2023 1:00:00 PM", System.Globalization.CultureInfo.InvariantCulture), newLab);

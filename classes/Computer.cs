@@ -13,7 +13,7 @@ public class Computer
 
     public bool getProgram(string program)
     {
-        return reservation == null && Array.Find(_programs, prg => prg == program) != null;
+        return Array.Find(_programs, prg => prg == program) != null;
     }
 
     public Computer(int id, string[] programs)
@@ -25,7 +25,7 @@ public class Computer
 
     public void addReserv(WorkingStationReserve reserv)
     {
-        for(int i=reserv.lab.Convert24h(reserv.Start); i < reserv.lab.Convert24h(reserv.End); i++){
+        for(int i=reserv.lab.Convert24h(reserv.Start) - 9; i < reserv.lab.Convert24h(reserv.End) - 9; i++){
             reservation[i]= reserv;
         }
     }

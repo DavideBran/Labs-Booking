@@ -6,6 +6,7 @@ public class Labs
 
     private Computer[][] _workingStation = new Computer[5][];
 
+
     // private void regulates(int day)
     // {
     //     for (int i = 0; i < _workingStation[day - 1].Length; i++)
@@ -37,7 +38,7 @@ public class Labs
         for (int i = 0; i < _workingStation[weekNumber - 1].Length; i++)
         {
             //controlla se la posizione datetime è occupata
-            int hourConverted = Convert24h(reserveDate);
+            int hourConverted = Convert24h(reserveDate) - 9;
             if (_workingStation[weekNumber - 1][i].reservation[hourConverted] != null && _workingStation[weekNumber - 1][i].reservation[hourConverted + temp] != null)
             {
                 return _workingStation[weekNumber - 1][i];
@@ -51,13 +52,13 @@ public class Labs
         for (int i = 0; i < _workingStation[weekNumber - 1].Length; i++)
         {
             //controlla se la posizione datetime è occupata
-            int hourConverted = Convert24h(reserveDate);
-            if (_workingStation[weekNumber - 1][i].getProgram(desiredProgram) && _workingStation[weekNumber - 1][i].reservation[hourConverted] != null && _workingStation[weekNumber - 1][i].reservation[hourConverted + temp] != null)
+            int hourConverted = Convert24h(reserveDate) - 9;
+            if (_workingStation[weekNumber - 1][i].getProgram(desiredProgram) && _workingStation[weekNumber - 1][i].reservation[hourConverted] == null && _workingStation[weekNumber - 1][i].reservation[hourConverted + temp] == null)
             {
                 return _workingStation[weekNumber - 1][i];
             }
         }
-        
+
         return null;
     }
 
@@ -86,6 +87,38 @@ public class Labs
         {
             Console.WriteLine("No Working Station Avaibe, Select a different Lab");
             return null;
+        }
+    }
+
+    public bool CheckAvaibility(int weekDay, DateTime reserveStart, int reservTemp, Teacher applicant)
+    {
+        int hour24 = Convert24h(reserveStart) - 9;
+        for (int i = 0; i < _workingStation[weekDay - 1].Length; i++)
+        {
+            if (reservTemp == 1)
+            {
+                if (_workingStation[weekDay - 1][i].reservation[hour24] == null) continue;
+            }
+            else
+            {
+                for (int j = hour24; j < hour24 + reservTemp; j++)
+                {
+                    if (_workingStation[weekDay - 1][i].reservation[j] != null) return false;
+                }
+            }
+        }
+        addReserv(weekDay, applicant, hour24, reservTemp, reserveStart);
+        return true;
+    }
+
+    private void addReserv(int weekDay, Teacher applicant, int timeSlice, int temp, DateTime date)
+    {
+        for (int i = 0; i < _workingStation[weekDay - 1].Length; i++)
+        {
+            for (int j = timeSlice; j < timeSlice + temp; j++)
+            {
+                _workingStation[weekDay - 1][i].reservation[j] = new WorkingStationReserve(date, temp, applicant, _workingStation[weekDay - 1][i], this);
+            }
         }
     }
 }

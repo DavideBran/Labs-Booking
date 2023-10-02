@@ -40,19 +40,18 @@ public class User
     public void BookWs(int term, string? neededProgram, Labs lab)
     {
         //Is the date time inserted right?
-        if (DateTime.Now.AddHours(term) > DateTime.Now.Date.AddHours(18) || TakeDaysNumber(DateTime.Now.Date) == -1)
+        DateTime today = DateTime.Now;
+        if (today.AddHours(term) > today.Date.AddHours(18) || TakeDaysNumber(today.Date) == -1 || today < today.Date.AddHours(9))
         {
             Console.WriteLine($"Sorry, you can't reserve the Working Station for {DateTime.Now}. Try a different Day");
             return;
         }
 
-        DateTime today = DateTime.Now;
         int day = TakeDaysNumber(today);
         Computer? ws;
 
         if (neededProgram != null)
         {
-
             ws = lab.FindComputer(neededProgram, day, today, term);
             if (ws == null)
             {
@@ -72,12 +71,10 @@ public class User
         }
 
         //Adding computer reserv
-        Reservation reserv = new WorkingStationReserve(today, term, this, ws, lab);
-        if (ws.addReserv(reserv))
-        {
-            Console.Write($"Working station booked on {today.Month}/{today.Day} {today.Hour}:{today.Minute}");
-            Console.WriteLine($" to {reserv.Start.Hour}:{reserv.End.Minute}");
-        }
+        WorkingStationReserve reserv = new WorkingStationReserve(today, term, this, ws, lab);
+        ws.addReserv(reserv);
+        Console.Write($"Working station booked on {today.Month}/{today.Day} {today.Hour}:{today.Minute}");
+        Console.WriteLine($" to {reserv.Start.Hour}:{reserv.End.Minute}");
 
 
     }
@@ -85,9 +82,9 @@ public class User
     //Personalizated Book, if the user need a particolar program
     public void BookWs(int term, string? neededProgram, DateTime reservStart, Labs lab)
     {
-        if (reservStart.AddHours(term) > DateTime.Now.Date.AddHours(18) || TakeDaysNumber(reservStart.Date) == -1)
+        if (reservStart < reservStart.Date.AddHours(9) || reservStart.AddHours(term) > reservStart.Date.AddHours(18) || TakeDaysNumber(reservStart.Date) == -1)
         {
-            Console.WriteLine($"Sorry, you can't reserve the Working Station for {DateTime.Now}. Try a different Day");
+            Console.WriteLine($"Sorry, you can't reserve the Working Station for {reservStart}. Try a different Day");
             return;
         }
 
@@ -108,16 +105,10 @@ public class User
         }
 
         //Adding computer reserv
-        Reservation reserv = new WorkingStationReserve(reservStart, term, this, ws, lab);
-        if (ws.addReserv(reserv))
-        {
-            Console.Write($"Working station booked on {reservStart.Month}/{reservStart.Day} {reservStart.Hour}:{reservStart.Minute}");
-            Console.WriteLine($" to {reserv.End.Hour}:{reserv.End.Minute}");
-        }
-        else
-        {
-            Console.WriteLine($"No computer avaible for {reservStart}");
-        }
+        WorkingStationReserve reserv = new WorkingStationReserve(reservStart, term, this, ws, lab);
+        ws.addReserv(reserv);
+        Console.Write($"Working station booked on {reservStart.Month}/{reservStart.Day} {reservStart.Hour}:{reservStart.Minute}");
+        Console.WriteLine($" to {reserv.End.Hour}:{reserv.End.Minute}");
     }
 }
 
@@ -133,18 +124,15 @@ public class Teacher : User
     public enum BookType { WORKINGSTATION, LAB }
 
     //entire lab prenotation
-    public void BookLab(Labs lab, DateTime date, int reservTemp)
+    public void BookLab(Labs lab, DateTime date, int reservTemp, Teacher teacher)
     {
-        int day = TakeDaysNumber(date);
-        Computer[]? workingStation = lab.getAllWorkingStation(day);
-        if (workingStation == null)
+        if (lab.CheckAvaibility(TakeDaysNumber(date), date, reservTemp, teacher))
         {
-            Console.WriteLine($"Sorry, you can't book the {lab} for {day}, try a different lab or day");
-            return;
+            Console.WriteLine($"{lab} has been prenotated for {date.Hour} to {date.Hour + reservTemp}");
         }
-        foreach (Computer ws in workingStation)
+        else 
         {
-            
+            Console.WriteLine($"Sorry, {lab} can't be prenoted, please try with other day or time");
         }
     }
 

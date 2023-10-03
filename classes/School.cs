@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Data.Common;
 using System.Net.WebSockets;
+using System.Reflection.Metadata;
 
 public class School
 {
@@ -141,116 +142,50 @@ public class School
     }
 
     //teacher Labs booking
-    public void Book(Teacher applicant, int hour)
+    public void showLabsAvaibility(Labs lab, int day)
     {
-        foreach (Labs lab in _labs)
+        Console.Write($"\t\t ID | {0 + 9}/{0 + 10} |");
+        for (int i = 1; i < 9; i++)
         {
-            if (lab.BookAll(applicant, hour)) { return; }
+            Console.Write($" {i + 9}/{i + 10} |");
         }
-        Console.WriteLine($"Sorry, theresn't any lab that can be prenoted");
-    }
 
-    public void Book(Teacher applicant, int day, int hour)
-    {
-        foreach (Labs lab in _labs)
+        for (int i = 0; i < _labs.Length; i++)
         {
-            if (lab.BookAll(applicant, day, hour)) { return; }
+            Console.Write($"{lab.Name} |");
+            lab.showLabsAvaibility(day);
         }
-        Console.WriteLine($"Sorry, theresn't any lab that can be prenoted on {day}");
+        /*
+            
+                            Insert Lab ID and Start Hour of Prenotation
+                                
+                                |  09/10 |  10/11 |  11/12 |
+                            Lab1 |   *   |  *   |    °   |
+                            Lab2 |   °   |  °   |    °   |
+                            Lab3 |   *   |  °   |    °   |
+        */
     }
-
-    public void Book(Teacher applicant, int day, int hour, Labs lab)
+    public bool Book(Teacher applicant, int day, int hour, Labs lab)
     {
-        if (lab.BookAll(applicant, day, hour)) { return; }
-        Console.WriteLine($"Sorry, {lab.Name} can't be prenoted on {day}");
+        if (lab.Book(applicant, day, hour))
+        {
+            Console.WriteLine($"\t\tPrenotation: {applicant.Name}{applicant.Surname}\n\t\t|{lab.Name}\n\t\tPrenotation Day: {day} from {hour} to {hour + 1}|");
+            return true;
+        }
+        return false;
     }
 
     //Studens and Teacher Working Station Booking
-    public void showAvaibility(Labs lab)
+    public void showWorkingStationAvaibility(Labs lab, int day)
     {
-        lab.showAvaibility();
+        lab.showWorkingStationAvaibility(day);
     }
 
-    public void showAvaibility(Labs lab, string program)
+    public bool Book(User applicant, int day, int hour, string ID, string? program, Labs lab)
     {
-        lab.showAvaibility(program);
-    }
-
-    public void Book(User applicant, Labs lab)
-    {
-        if (lab.Book(applicant)) return;
-        else Console.WriteLine($"Sorry, No working Station avaible for the week in {lab.Name}");
-    }
-    public void Book(User applicant, int day, Labs lab)
-    {
-        if (lab.Book(day, applicant)) return;
-        else Console.WriteLine($"Sorry, the lab is full for {day}");
-    }
-
-    public void Book(User applicant, int day, int hour, string program, Labs lab)
-    {
-        if (lab.Book(applicant, day, hour, program)) return;
-        else Console.WriteLine($"Sorry, the lab is full for {day}");
-    }
-
-    public void Book(User applicant, int day, int hour, Labs lab)
-    {
-        if (lab.Book(applicant, day, hour)) return;
-        else Console.WriteLine($"Sorry, the lab is full for {day}");
-    }
-
-    public void Book(User applicant, int day)
-    {
-        foreach (Labs lab in _labs)
-        {
-            if (lab.Book(day, applicant)) { return; }
-        }
-    }
-
-    public void Book(User applicant, int day, int hour)
-    {
-        foreach (Labs lab in _labs)
-        {
-            if (lab.Book(applicant, day, hour)) { return; }
-        }
-    }
-
-    public void Book(User applicant, int day, string program)
-    {
-        foreach (Labs lab in _labs)
-        {
-            if (lab.Book(applicant, day, program)) { return; }
-        }
-    }
-
-    public void Book(User applicant, int day, int hour, string program)
-    {
-        foreach (Labs lab in _labs)
-        {
-            if (lab.Book(applicant, day, hour, program)) { return; }
-        }
-    }
-
-    public void Book(User applicant)
-    {
-        foreach (Labs lab in _labs)
-        {
-            if (lab.Book(applicant)) { return; }
-        }
-        Console.WriteLine("Sorry, theresn't any free Lab for today...");
-    }
-
-    public void ShowLabsAllAvaible(int day, int hour)
-    {
-        Console.Write($"\t\t Prenotable Labs|");
-        for (int i = 0; i < _labs.Length; i++)
-        {
-            if (_labs[i].IsFullyPrenotable(day, hour))
-            {
-                Console.Write($" {_labs[i].Name} |");
-            }
-        }
-        Console.WriteLine();
+        if (!lab.Book(applicant, day, hour, ID, program)) { return false; }
+        Console.WriteLine($"\t\tPrenotation: {applicant.Name}{applicant.Surname}\n\t\t|{lab.Name}, Working Station ID: {ID}\n\t\tPrenotation Day: {day} from {hour} to {hour + 1}|");
+        return true;
     }
 }
 
@@ -264,7 +199,7 @@ public class Labs
 
     private int _usage = 0;
 
-    private void deepCopy(WorkingStation[] workingStation)
+    private void DeepCopy(WorkingStation[] workingStation)
     {
         for (int i = 0; i < _workingStation.Length; i++)
         {
@@ -286,169 +221,94 @@ public class Labs
         _id = id;
         _labName = labName;
 
-        deepCopy(workingStation);
+        DeepCopy(workingStation);
     }
 
     //Working Station Bookings
-    public bool Book(User applicant, int hour)
+    public bool Book(User applicant, int day, int hour, string id, string? program)
     {
-        for (int i = 0; i < _workingStation.Length; i++)
+        for (int i = 0; i < _workingStation[day].Length; i++)
         {
-            for (int j = 0; j < _workingStation[i].Length; j++)
+            if (_workingStation[day][i].ID == id)
             {
-                if (_workingStation[i][j].tryBook(hour, applicant))
+                if (!_workingStation[day][i].tryBook(applicant, hour, program))
                 {
-                    Console.WriteLine($"{_workingStation[i][j].ID} in {Name} Booked for day {i + 1} at {hour}");
-                    return true;
+                    if (program != null) { Console.WriteLine($"The Working Station do not have {program}"); }
+                    else { Console.WriteLine("The Working Station is already Booked"); }
                 }
-            }
-        }
-        return false;
-    }
-
-    public bool Book(User applicant, int day, int hour)
-    {
-        for (int i = 0; i < _workingStation[day].Length; i++)
-        {
-            if (_workingStation[day][i].tryBook(hour, applicant))
-            {
-                Console.WriteLine($"{_workingStation[day][i].ID} in {Name} Booked for day {i + 1} at {hour}");
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public bool Book(User applicant, int day, int hour, string program)
-    {
-        for (int i = 0; i < _workingStation[day].Length; i++)
-        {
-            if (_workingStation[day][i].tryBook(applicant, program, hour))
-            {
-                Console.WriteLine($"{_workingStation[day][i].ID} in {Name} Booked for day {day} at {hour}");
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public bool Book(User applicant)
-    {
-        int hour;
-        for (int i = 0; i < _workingStation.Length; i++)
-        {
-            for (int j = 0; j < _workingStation[i].Length; j++)
-            {
-                if ((hour = _workingStation[i][j].tryBook(applicant)) != -1)
-                {
-                    Console.WriteLine($"{_workingStation[i][j].ID} in {Name} Booked for day {i + 1} at {hour}");
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public bool Book(User applicant, int day, string program)
-    {
-        int hour;
-        for (int i = 0; i < _workingStation[day].Length; i++)
-        {
-            if ((hour = _workingStation[day][i].tryBook(applicant, program)) != -1)
-            {
-                Console.WriteLine($"{_workingStation[day][i].ID} in {Name} Booked for day {day} at {hour}");
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public bool Book(int day, User applicant)
-    {
-        int hour;
-        for (int i = 0; i < _workingStation[day].Length; i++)
-        {
-            if ((hour = _workingStation[day][i].tryBook(applicant)) != -1)
-            {
-                Console.WriteLine($"{_workingStation[day][i].ID} in {Name} Booked for day {day}");
-                return true;
             }
         }
         return true;
+    }
+
+    public void showWorkingStationAvaibility(int day)
+    {
+        Console.Write($"\n\t\t ID | {0 + 9}/{0 + 10} |");
+        for (int i = 1; i < 9; i++)
+        {
+            Console.Write($" {i + 9}/{i + 10} |");
+        }
+        Console.WriteLine();
+        for (int i = 0; i < _workingStation[day].Length; i++)
+        {
+            _workingStation[day][i].ShowAvaibility();
+            Console.WriteLine();
+        }
+
+        /*
+                            Insert Lab ID and Start Hour of Prenotation
+
+                              ID |  09/10 |  10/11 |  13/14 |  14/15  |
+                            Pos1  |   *   |  *   |    °   |    °   |
+                            Pos2 |   °   |  °   |    °   |    °   |
+                            Pos3 |   *   |  °   |    °   |    °   |
+                            Pos4 |   *   |  *   |    °   |    °   |
+        */
     }
 
     //Labs Booking 
-    public bool BookAll(Teacher applicant, int hour)
-    {
-        for (int i = 0; i < _workingStation.Length; i++)
-        {
-            for (int j = 0; j < _workingStation[i].Length; j++)
-            {
-                if (_workingStation[i][j].tryBook(hour, applicant))
-                {
-                    Console.WriteLine($"{Name} Booked for day {i + 1} at {hour}");
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
-    public bool BookAll(Teacher applicant, int day, int hour)
+    public bool Book(Teacher applicant, int day, int hour)
     {
-        foreach (WorkingStation ws in _workingStation[day])
+        for (int i = 0; i < _workingStation[day].Length; i++)
         {
-            if (!ws.tryBook(hour, applicant)) { return false; }
+            if (!_workingStation[day][i].IsPrenotable(hour)) { return false; }
         }
-        Console.WriteLine($"{Name} prenotated for {day} at {hour}");
         return true;
     }
 
-    public override string ToString()
+    public void showLabsAvaibility(int day)
     {
-        return "OCACA CESSU";
-    }
-
-    public void showAvaibility()
-    {
-        Console.Write("\t\tWorking Station |");
-        for (int i = 0; i < _workingStation.Length; i++)
+        for (int hour = 9; hour < 19; hour++)
         {
-            for (int j = 0; j < _workingStation[i].Length; j++)
+            bool flag = true;
+            for (int i = 0; i < _workingStation[day].Length; i++)
             {
-                Console.Write($"\t\t {_workingStation[i][j].ID} |");
+                if (_workingStation[day][i].IsPrenotable(hour)) { continue; }
+                else { flag = false; }
             }
-            Console.WriteLine($"\t\t{i}-");
-        }
-    }
-    public void showAvaibility(string program)
-    {
-        Console.Write("\t\tWorking Station |");
-        for (int i = 0; i < _workingStation.Length; i++)
-        {
-            bool flag = false;
-            for (int j = 0; j < _workingStation[i].Length; j++)
-            {
-                if (_workingStation[i][j].hasProgram(program))
-                {
-                    Console.Write($"\t\t {_workingStation[i][j].ID} |");
-                    flag = true;
-                }
-            }
-            if (flag)
-            {
-                Console.WriteLine($"\t\t{i}-");
-            }
+            if (flag) { Console.Write("  °  |"); }
+            else Console.Write("  *  |");
         }
 
+
+        /* 
+                            Insert Lab ID and Start Hour of Prenotation
+
+                                |  09/10 |  10/11 |  11/12 |
+                            Lab1 |   *   |  *   |    °   |
+                            Lab2 |   °   |  °   |    °   |
+                            Lab3 |   *   |  °   |    °   |
+        */
     }
 
     public bool IsFullyPrenotable(int day, int hour)
     {
-        foreach (WorkingStation ws in _workingStation[day]){
-            if (!ws.isPrenotable(hour)) { return false; }
+        foreach (WorkingStation ws in _workingStation[day])
+        {
+            if (!ws.IsPrenotable(hour)) { return false; }
         }
         return true;
-        
+
     }
 }

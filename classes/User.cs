@@ -22,6 +22,9 @@ public abstract class User
 public class Student : User
 {
     private string _matricola;
+
+    public string Matricola { get => _matricola; }
+
     public Student(string name, string surname, string matricola) : base(name, surname)
     {
         _matricola = matricola;
@@ -32,8 +35,14 @@ public class Student : User
 public class Teacher : User
 {
     private string _teacherPass;
+
+    public bool isTeacher(string pass)
+    {
+        if(_teacherPass == pass) { return true; }
+        return false;
+    }
     public Teacher(string name, string surname, string teacherPass) : base(name, surname)
     {
-        _teacherPass= teacherPass;
+        _teacherPass = teacherPass;
     }
 }

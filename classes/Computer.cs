@@ -109,23 +109,15 @@ public class WorkingStation : Computer
     }
 
     //Menu Methods
-    public void ShowAvaibility(int reservTerm)
+    public bool hasProgram(string program)
     {
-        Console.Write($"The computer {ID} is avaible for: ");
-        for (int i = 0; i < _reservation.Length - reservTerm; i++)
-        {
-            bool checkNextAvaibility = true;
-            for (int j = i; j < _reservation.Length; j++)
-            {
-                if (_reservation[j] != null) checkNextAvaibility = false;
-            }
-            if (checkNextAvaibility) Console.Write($"{i + 9} ");
-        }
-        Console.WriteLine();
+        if (getProgram(program)) { return true; }
+        return false;
     }
 
-    public bool CheckCompleteAvaibility(int term, int hour)
+    public bool isPrenotable(int hour)
     {
-        return true;
+        if(_reservation[hour - 9] == null) return true;
+        else return false;
     }
 }

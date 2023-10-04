@@ -98,7 +98,6 @@ public class Client
                     int hour;
                     if (labName_hour.Length == 2 && int.TryParse(labName_hour[1], out hour) && hour < 18 && hour >= 9 && (lab = school.FindLab(labName_hour[0])) != null)
                     {
-                        Console.WriteLine("Teacher " + teacher.Name + " Day " + day + " hour " + hour + " lab " + lab);
                         if (school.Book(teacher, day, hour, lab)) { break; }
                     }
                     Console.WriteLine("Select Different Lab or hour");

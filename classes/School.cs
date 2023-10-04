@@ -36,9 +36,9 @@ public class School
     public int StudensCount()
     {
         int counter = 0;
-        foreach (User Employ in _users)
+        foreach (User student in _users)
         {
-            if (Employ.GetType() == typeof(Student))
+            if (student.GetType() == typeof(Student))
             {
                 counter++;
             }
@@ -56,11 +56,11 @@ public class School
     public void ShowTeacher()
     {
         Console.Write("\n\t\tTeacher |");
-        foreach (User Employ in _users)
+        foreach (User teacher in _users)
         {
-            if (Employ.GetType() == typeof(Teacher))
+            if (teacher.GetType() == typeof(Teacher))
             {
-                Console.Write($" {Employ.Name}, {Employ.Surname} |");
+                Console.Write($" {teacher.Name}, {teacher.Surname} |");
             }
         }
         Console.WriteLine();
@@ -69,11 +69,11 @@ public class School
     public void ShowStudent()
     {
         Console.Write("\n\t\tStudens |");
-        foreach (User Employ in _users)
+        foreach (User student in _users)
         {
-            if (Employ.GetType() == typeof(Student))
+            if (student.GetType() == typeof(Student))
             {
-                Console.Write($" {((Student)Employ).Matricola} |");
+                Console.Write($" {((Student)student).Matricola} |");
             }
         }
         Console.WriteLine();
@@ -217,6 +217,7 @@ public class Labs
     }
 
     public int WsAvaible { get => _workingStation[0].Length; }
+    
     public string Name { get => _labName; }
 
     public int Usage { get => _usage; }
@@ -284,23 +285,19 @@ public class Labs
     //Labs Booking 
     public bool Book(Teacher applicant, int day, int hour)
     {
-        bool flag = true;
         for (int i = 0; i < _workingStation[day].Length; i++)
         {
             if (!_workingStation[day][i].IsPrenotable(hour))
             {
                 return false;
-                break;
             }
         }
-        if (flag)
+
+        foreach (WorkingStation ws in _workingStation[day])
         {
-            foreach (WorkingStation ws in _workingStation[day])
-            {
-                ws.tryBook(applicant, hour, null);
-            }
-            _usage++;
+            ws.tryBook(applicant, hour, null);
         }
+        _usage++;
         _reserv.Add(applicant);
         return true;
     }
@@ -328,16 +325,6 @@ public class Labs
                             Lab2 |   °   |  °   |    °   |
                             Lab3 |   *   |  °   |    °   |
         */
-    }
-
-    public bool IsFullyPrenotable(int day, int hour)
-    {
-        foreach (WorkingStation ws in _workingStation[day])
-        {
-            if (!ws.IsPrenotable(hour)) { return false; }
-        }
-        return true;
-
     }
 
     //Usage

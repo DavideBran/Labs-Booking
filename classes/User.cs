@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Data;
 
 public abstract class User
@@ -10,6 +11,7 @@ public abstract class User
     public string Name { get => _name; }
 
     public string Surname { get => _surname; }
+
 
 
     public User(string name, string surname)
@@ -36,13 +38,21 @@ public class Teacher : User
 {
     private string _teacherPass;
 
+    protected string pass { get => _teacherPass; }
+
     public bool isTeacher(string pass)
     {
-        if(_teacherPass == pass) { return true; }
+        if (_teacherPass == pass) { return true; }
         return false;
     }
     public Teacher(string name, string surname, string teacherPass) : base(name, surname)
     {
         _teacherPass = teacherPass;
+    }
+
+    public bool IsEquals(Teacher teacher)
+    {
+        if (teacher.pass == _teacherPass) { return true; }
+        return false;
     }
 }

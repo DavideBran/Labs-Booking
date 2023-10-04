@@ -142,18 +142,20 @@ public class School
     }
 
     //teacher Labs booking
-    public void showLabsAvaibility(Labs lab, int day)
+    public void showLabsAvaibility(int day)
     {
-        Console.Write($"\t\t ID | {0 + 9}/{0 + 10} |");
+        Console.Write("\n\t\t" + "Name".PadRight(10) + $"| {0 + 9}/{0 + 10} " + "|");
         for (int i = 1; i < 9; i++)
         {
-            Console.Write($" {i + 9}/{i + 10} |");
+            Console.Write(" " + $"{i + 9}/{i + 10} " + "|");
         }
+        Console.WriteLine();
 
         for (int i = 0; i < _labs.Length; i++)
         {
-            Console.Write($"{lab.Name} |");
-            lab.showLabsAvaibility(day);
+            Console.Write($"\t\t{_labs[i].Name}".PadRight(15) + "|");
+            _labs[i].showLabsAvaibility(day);
+            Console.WriteLine();
         }
         /*
             
@@ -165,11 +167,12 @@ public class School
                             Lab3 |   *   |  °   |    °   |
         */
     }
+
     public bool Book(Teacher applicant, int day, int hour, Labs lab)
     {
         if (lab.Book(applicant, day, hour))
         {
-            Console.WriteLine($"\t\tPrenotation: {applicant.Name}{applicant.Surname}\n\t\t|{lab.Name}\n\t\tPrenotation Day: {day} from {hour} to {hour + 1}|");
+            Console.WriteLine($"\t\tPrenotation: {applicant.Name} {applicant.Surname}\n\t\t| {lab.Name} |\n\t\t| Prenotation Day: {day} from {hour} to {hour + 1} |");
             return true;
         }
         return false;
@@ -184,7 +187,7 @@ public class School
     public bool Book(User applicant, int day, int hour, string ID, string? program, Labs lab)
     {
         if (!lab.Book(applicant, day, hour, ID, program)) { return false; }
-        Console.WriteLine($"\t\tPrenotation: {applicant.Name}{applicant.Surname}\n\t\t|{lab.Name}, Working Station ID: {ID}\n\t\tPrenotation Day: {day} from {hour} to {hour + 1}|");
+        Console.WriteLine($"\t\t| Prenotation: {applicant.Name} {applicant.Surname} |\n\t\t| {lab.Name}, Working Station ID: {ID} |\n\t\t| Prenotation Day: {day} from {hour} to {hour + 1} |");
         return true;
     }
 }
@@ -196,6 +199,8 @@ public class Labs
     private string _labName;
 
     private WorkingStation[][] _workingStation = new WorkingStation[5][];
+
+    private List<Teacher> _reserv = new();
 
     private int _usage = 0;
 
@@ -233,20 +238,30 @@ public class Labs
             {
                 if (!_workingStation[day][i].tryBook(applicant, hour, program))
                 {
-                    if (program != null) { Console.WriteLine($"The Working Station do not have {program}"); }
-                    else { Console.WriteLine("The Working Station is already Booked"); }
+                    if (program != null && program != "")
+                    {
+                        Console.WriteLine($"The Working Station do not have {program}");
+                        return false;
+                    }
+                    else
+                    {
+                        Console.WriteLine("The Working Station is already Booked");
+                        return false;
+                    }
                 }
+                else { return true; }
             }
         }
-        return true;
+        Console.WriteLine("Working Station not found");
+        return false;
     }
 
     public void showWorkingStationAvaibility(int day)
     {
-        Console.Write($"\n\t\t ID | {0 + 9}/{0 + 10} |");
+        Console.Write("\n\t\t" + "ID".PadLeft(5) + $"| {0 + 9}/{0 + 10}".PadRight(5) + "|");
         for (int i = 1; i < 9; i++)
         {
-            Console.Write($" {i + 9}/{i + 10} |");
+            Console.Write(" ".PadLeft(5) + $"{i + 9}/{i + 10} ".PadRight(5) + "|");
         }
         Console.WriteLine();
         for (int i = 0; i < _workingStation[day].Length; i++)
@@ -267,19 +282,32 @@ public class Labs
     }
 
     //Labs Booking 
-
     public bool Book(Teacher applicant, int day, int hour)
     {
+        bool flag = true;
         for (int i = 0; i < _workingStation[day].Length; i++)
         {
-            if (!_workingStation[day][i].IsPrenotable(hour)) { return false; }
+            if (!_workingStation[day][i].IsPrenotable(hour))
+            {
+                return false;
+                break;
+            }
         }
+        if (flag)
+        {
+            foreach (WorkingStation ws in _workingStation[day])
+            {
+                ws.tryBook(applicant, hour, null);
+            }
+            _usage++;
+        }
+        _reserv.Add(applicant);
         return true;
     }
 
     public void showLabsAvaibility(int day)
     {
-        for (int hour = 9; hour < 19; hour++)
+        for (int hour = 9; hour < 18; hour++)
         {
             bool flag = true;
             for (int i = 0; i < _workingStation[day].Length; i++)
@@ -287,8 +315,8 @@ public class Labs
                 if (_workingStation[day][i].IsPrenotable(hour)) { continue; }
                 else { flag = false; }
             }
-            if (flag) { Console.Write("  °  |"); }
-            else Console.Write("  *  |");
+            if (flag) { Console.Write("  °  |".PadRight(7)); }
+            else Console.Write("  *  |".PadRight(7));
         }
 
 
@@ -310,5 +338,29 @@ public class Labs
         }
         return true;
 
+    }
+
+    //Usage
+    public void printLabUsage(Teacher tch)
+    {
+        int usage = 0;
+        foreach (Teacher teacher in _reserv)
+        {
+            if (teacher.IsEquals(tch)) { usage++; }
+        }
+        Console.WriteLine($"{tch.Name} has used the {Name} for {usage} hour");
+    }
+
+    public void printStudentUsage(Student student)
+    {
+        int userUsage= 0;
+        for (int i = 0; i < _workingStation.Length; i++)
+        {
+            for (int j = 0; j < _workingStation[i].Length; j++)
+            {
+                userUsage+= _workingStation[i][j].UsageBy(student);
+            }
+        }
+        Console.Write(userUsage);
     }
 }

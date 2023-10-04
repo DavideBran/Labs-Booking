@@ -47,6 +47,7 @@ public class WorkingStation : Computer
         if (_reservation[hour - 9] == null)
         {
             _reservation[hour - 9] = applicant;
+            _computerUsage++;
             return true;
         }
         return false;
@@ -54,7 +55,7 @@ public class WorkingStation : Computer
 
     public bool tryBook(User applicant, int hour, string? program)
     {
-        if (program != null)
+        if (program != null && program != "")
         {
             if (getProgram(program))
             {
@@ -64,7 +65,8 @@ public class WorkingStation : Computer
         }
         else
         {
-            return AddReserv(applicant, hour);
+            bool ret = AddReserv(applicant, hour);
+            return ret;
         }
     }
 
@@ -77,14 +79,23 @@ public class WorkingStation : Computer
     }
 
     //menu methods
-
     public void ShowAvaibility()
     {
         Console.Write($"\t\t{ID}|");
         for (int i = 0; i < _reservation.Length; i++)
         {
-            if (_reservation[i] == null) { Console.Write("  °  |"); }
-            else { Console.Write("  * |"); }
+            if (_reservation[i] == null) { Console.Write("  ".PadRight(5) + "°".PadRight(5) + "|".PadRight(5)); }
+            else { Console.Write("  ".PadRight(5) + "*".PadRight(5) + "|".PadRight(5)); }
         }
+    }
+
+    public int UsageBy(Student student)
+    {
+        int usage= 0;
+        foreach (User st in _reservation)
+        {
+            if(st != null && st.GetType() == typeof(Student) && ((Student)st).Matricola == student.Matricola) usage++;
+        }
+        return usage;
     }
 }

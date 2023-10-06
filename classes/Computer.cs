@@ -44,6 +44,7 @@ public class WorkingStation : Computer
 
     private bool AddReserv(User applicant, int hour)
     {
+        //Check if the Working Station is Booked for hour
         if (_reservation[hour - 9] == null)
         {
             _reservation[hour - 9] = applicant;
@@ -53,8 +54,9 @@ public class WorkingStation : Computer
         return false;
     }
 
-    public bool tryBook(User applicant, int hour, string? program)
+    public bool TryBook(User applicant, int hour, string? program)
     {
+        //check if the User need a particular program on the Working Station
         if (program != null && program != "")
         {
             if (getProgram(program))
@@ -94,6 +96,7 @@ public class WorkingStation : Computer
         int usage= 0;
         foreach (User st in _reservation)
         {
+            //Check if the computer is Booked and if the Applicant is student
             if(st != null && st.GetType() == typeof(Student) && ((Student)st).Matricola == student.Matricola) usage++;
         }
         return usage;

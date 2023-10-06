@@ -21,6 +21,12 @@ public abstract class User
     }
 }
 
+//EXCEPTION 
+public class InvalidMatricolaException : Exception
+{
+    public InvalidMatricolaException() { }
+}
+
 public class Student : User
 {
     private string _matricola;

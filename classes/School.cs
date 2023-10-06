@@ -53,91 +53,113 @@ public class School
         return counter;
     }
 
-    public void ShowTeacher()
+    public string ShowTeacher()
     {
-        Console.Write("\n\t\tTeacher |");
+        string schoolTeacher = "\n\t\tTeacher |";
         foreach (User teacher in _users)
         {
             if (teacher.GetType() == typeof(Teacher))
             {
-                Console.Write($" {teacher.Name}, {teacher.Surname} |");
+                schoolTeacher += $" {teacher.Name}, {teacher.Surname} |";
             }
         }
-        Console.WriteLine();
+        schoolTeacher += "\n";
+        return schoolTeacher;
     }
 
-    public void ShowStudent()
+    public string ShowStudent()
     {
-        Console.Write("\n\t\tStudens |");
+        string schoolStudent = ("\n\t\tStudens |");
         foreach (User student in _users)
         {
             if (student.GetType() == typeof(Student))
             {
-                Console.Write($" {((Student)student).Matricola} |");
+                schoolStudent += $" {((Student)student).Matricola} |";
             }
         }
-        Console.WriteLine();
+        schoolStudent += "\n";
+        return schoolStudent;
     }
 
-    public void ShowLabs()
+    public string ShowLabs()
     {
-        Console.Write("\n\t\tLabs |");
+        string schoolLabs = "\n\t\tLabs |";
         foreach (Labs Lab in _labs)
         {
-            Console.Write($" {Lab.Name}, with {Lab.WsAvaible} Working Station |");
+            schoolLabs += $" {Lab.Name}, with {Lab.WsAvaible} Working Station |";
         }
-        Console.WriteLine();
+        schoolLabs += "\n";
+        return schoolLabs;
     }
 
     public override string ToString()
     {
-        Console.WriteLine($"\t\t{Name} has {TeacherCount()} Teacher, {StudensCount()} Studens and {LabsCount()} Labs: ");
-        ShowTeacher();
-        ShowStudent();
-        ShowLabs();
-        return "";
+        string ret = $"\t\t{Name} has {TeacherCount()} Teacher, {StudensCount()} Studens and {LabsCount()} Labs: ";
+        ret += ShowTeacher() + ShowStudent() + ShowLabs();
+        return ret;
     }
 
     //Control Methods
     public Student? FindStudent(string? matricola)
     {
-        if (matricola == null)
+        try
+        {
+            foreach (User student in _users)
+            {
+                if (student.GetType() == typeof(Student) && ((Student)student).Matricola == matricola) { return (Student)student; }
+            }
+            return null;
+        }
+        catch (NullReferenceException)
         {
             Console.WriteLine("ERROR: Invalid Matricola");
             return null;
         }
 
-        foreach (User student in _users)
-        {
-            if (student.GetType() == typeof(Student) && ((Student)student).Matricola == matricola) { return (Student)student; }
-        }
-        return null;
+
     }
 
     public Teacher? FindTeacher(string? pass)
     {
-        if (pass == null)
+        try
+        {
+            foreach (User teacher in _users)
+            {
+                if (teacher.GetType() == typeof(Teacher) && ((Teacher)teacher).isTeacher(pass)) { return (Teacher)teacher; }
+            }
+            return null;
+        }
+        catch (NullReferenceException)
         {
             Console.WriteLine("ERROR: Invalid Pass");
             return null;
         }
 
-        foreach (User teacher in _users)
-        {
-            if (teacher.GetType() == typeof(Teacher) && ((Teacher)teacher).isTeacher(pass)) { return (Teacher)teacher; }
-        }
-        return null;
+
     }
 
-    public Labs? FindLab(string labName)
+    public Labs? FindLab(string? labName)
     {
-        foreach (Labs Lab in _labs)
+        try
         {
-            if (Lab.Name == labName)
+            foreach (Labs Lab in _labs)
             {
-                return Lab;
+                if (Lab.Name == labName)
+                {
+                    return Lab;
+                }
             }
+            throw new InvalidLabException(string.Format($"{labName} not found"));
         }
+        catch (NullReferenceException)
+        {
+            Console.WriteLine("ERROR: Invalid Lab name");
+        }
+        catch (InvalidLabException)
+        {
+            return null;
+        }
+
         return null;
     }
 
@@ -157,6 +179,7 @@ public class School
             _labs[i].showLabsAvaibility(day);
             Console.WriteLine();
         }
+
         /*
             
                             Insert Lab ID and Start Hour of Prenotation
@@ -179,10 +202,7 @@ public class School
     }
 
     //Studens and Teacher Working Station Booking
-    public void showWorkingStationAvaibility(Labs lab, int day)
-    {
-        lab.showWorkingStationAvaibility(day);
-    }
+    public void showWorkingStationAvaibility(Labs lab, int day) { lab.showWorkingStationAvaibility(day); }
 
     public bool Book(User applicant, int day, int hour, string ID, string? program, Labs lab)
     {
@@ -217,7 +237,7 @@ public class Labs
     }
 
     public int WsAvaible { get => _workingStation[0].Length; }
-    
+
     public string Name { get => _labName; }
 
     public int Usage { get => _usage; }
@@ -237,7 +257,7 @@ public class Labs
         {
             if (_workingStation[day][i].ID == id)
             {
-                if (!_workingStation[day][i].tryBook(applicant, hour, program))
+                if (!_workingStation[day][i].TryBook(applicant, hour, program))
                 {
                     if (program != null && program != "")
                     {
@@ -295,7 +315,7 @@ public class Labs
 
         foreach (WorkingStation ws in _workingStation[day])
         {
-            ws.tryBook(applicant, hour, null);
+            ws.TryBook(applicant, hour, null);
         }
         _usage++;
         _reserv.Add(applicant);
@@ -340,12 +360,12 @@ public class Labs
 
     public void printStudentUsage(Student student)
     {
-        int userUsage= 0;
+        int userUsage = 0;
         for (int i = 0; i < _workingStation.Length; i++)
         {
             for (int j = 0; j < _workingStation[i].Length; j++)
             {
-                userUsage+= _workingStation[i][j].UsageBy(student);
+                userUsage += _workingStation[i][j].UsageBy(student);
             }
         }
         Console.Write(userUsage);

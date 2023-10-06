@@ -2,40 +2,54 @@ public class Client
 {
     private School _school;
 
-    private Labs SelectDay(ref int day, Labs? lab)
+    private Labs SelectDay(ref int? day, Labs? lab)
     {
         string? response;
         Labs retLab;
         Console.WriteLine("\t\tSelect a day\n\t\t1-Mon\n\t\t2-Tue\n\t\t3-Wed\n\t\t3-Thu\n\t\t4-Fri");
         while (true)
         {
-            if ((int.TryParse(Console.ReadLine(), out day)) && (day < 5 && day > 0))
+            try
             {
+                day = int.Parse(Console.ReadLine());
+                day = day == null || day > 5 || day < 1 ? throw new InvalidDayException() : day;
                 Console.WriteLine("Select a Lab (insert the laboratory Name)");
-                school.ShowLabs();
+                Console.WriteLine(school.ShowLabs());
                 while ((response = Console.ReadLine()) != null && response != "")
                 {
                     if ((retLab = school.FindLab(response)) != null)
                     {
                         return retLab;
                     }
-                    else { Console.WriteLine("ERROR: Invalid Laboratory... Insert a valid Name"); }
+                    else { Console.WriteLine("insert a valid Laboratory"); }
                 }
             }
-            else { Console.WriteLine("Insert a valid Day"); }
+            catch (InvalidDayException)
+            {
+                Console.WriteLine("Insert a valid Day");
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Insert a valid Hour");
+            }
         }
     }
 
-    private void SelectDay(ref int day)
+    private void SelectDay(ref int? day)
     {
         Console.WriteLine("\t\tSelect a day\n\t\t1-Mon\n\t\t2-Tue\n\t\t3-Wed\n\t\t3-Thu\n\t\t4-Fri");
         while (true)
         {
-            if ((int.TryParse(Console.ReadLine(), out day)) && (day < 5 && day > 0))
+            try
             {
+                day = int.Parse(Console.ReadLine());
+                day = day == null || day > 5 || day < 1 ? throw new Exception() : day;
                 break;
             }
-            Console.WriteLine("Insert a valid Day");
+            catch
+            {
+                Console.WriteLine("Insert a valid Day");
+            }
         }
     }
 
@@ -48,23 +62,42 @@ public class Client
             string? response;
             if ((response = Console.ReadLine()) != null)
             {
-                string[] id_hour = response.Split("/");
-                int hour;
+                string[] id_hour = null;
+                int? hour = 0;
+                try
+                {
+                    id_hour = response.Split("/");
+                    id_hour = id_hour.Length == 2 ? id_hour : throw new ArgumentException();
+                    hour = int.Parse(id_hour[1]);
+                }
+                catch (ArgumentException)
+                {
+                    Console.WriteLine("Insert a valid Lab name or hour");
+                }
+
                 while (true)
                 {
-                    if (id_hour.Length == 2 && int.TryParse(id_hour[1], out hour) && hour >= 9 && hour < 18)
+                    try
                     {
-                        if (program != null && school.Book(student, day, hour, id_hour[0], program, lab)) { break; }
-                        else if (program != null && program != "") { Console.WriteLine("Select differt Working Station or hour"); }
-                        else
-                        {
-                            if (school.Book(student, day, int.Parse(id_hour[1]), id_hour[0], null, lab)) { break; }
-                            else { Console.WriteLine("Select different hour or Working Station"); }
-                        }
+                        hour = hour == null || hour < 9 || hour >= 18 ? throw new InvalidHourException() : hour;
+                        if (!school.Book(student, day, (int)hour, id_hour[0], program, lab)) { throw new Exception(); }
+
                     }
-                    else
+                    catch (InvalidHourException)
                     {
                         Console.WriteLine("Select a valid Hour or Working Station");
+                        break;
+                    }
+                    catch (Exception)
+                    {
+                        if (program != null && program != "")
+                        {
+                            Console.WriteLine("Program Not found");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Working Station is already Booked Select a different one");
+                        }
                         break;
                     }
                 }
@@ -82,63 +115,85 @@ public class Client
         }
     }
 
-    private Labs? SelectLaboratory(Teacher teacher, ref int day)
+    private Labs? SelectLaboratory(Teacher teacher, int day)
     {
-        Labs? lab;
+        Labs? lab = null;
         while (true)
         {
             Console.WriteLine("Select Laboratory and hour to Book (LabName/hour)");
             string? response;
-            school.showLabsAvaibility(day);
+            school.showLabsAvaibility((int)day);
             while (true)
             {
                 if ((response = Console.ReadLine()) != null && response != "")
                 {
-                    string[] labName_hour = response.Split("/");
-                    int hour;
-                    if (labName_hour.Length == 2 && int.TryParse(labName_hour[1], out hour) && hour < 18 && hour >= 9 && (lab = school.FindLab(labName_hour[0])) != null)
+                    try
                     {
-                        if (school.Book(teacher, day, hour, lab)) { break; }
+                        string[] labName_hour = response.Split("/");
+                        labName_hour = labName_hour.Length == 2 ? labName_hour : throw new ArgumentException();
+                        int? hour = int.Parse(labName_hour[1]);
+                        hour = hour == null || hour < 9 || hour >= 18 ? throw new InvalidHourException() : hour;
+                        lab = school.FindLab(labName_hour[0]);
+                        if (labName_hour.Length == 2)
+                        {
+                            if (school.Book(teacher, day, (int)hour, lab)) { break; }
+                        }
                     }
-                    Console.WriteLine("Select Different Lab or hour");
+                    catch (InvalidHourException)
+                    {
+                        Console.WriteLine("Invalid Hour");
+                    }
+                    catch (InvalidLabException e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                    catch (ArgumentException)
+                    {
+                        Console.WriteLine("Invalid Lab / hour insert!");
+                    }
                 }
+                Console.WriteLine("Select a Valid Laboratory or press Q for Exit (If you want continue with prenotation press any key)");
+                if (Console.ReadKey().Key.ToString() == "Q") { break; }
+                Console.WriteLine();
             }
             Console.WriteLine("Wanna Book some other Labs? (y/n)");
             if ((response = Console.ReadLine()) == "n") { break; }
         }
-        return lab==null? null : lab;
-
+        return lab;
     }
 
-    private Teacher verifyTeacher()
+    private Teacher VerifyTeacher()
     {
         Teacher teacher;
         bool keep = true;
-        string? response;
+        string? response = null;
         while (keep)
         {
             Console.WriteLine("insert Teacher Pass");
-            if ((response = Console.ReadLine()) != "" && response != null && (teacher = school.FindTeacher(response)) != null) { return teacher; }
+            response = Console.ReadLine();
+            if ((teacher = school.FindTeacher(response)) != null) { return teacher; }
             else { Console.WriteLine("Invalid Pass: Insert a Correct Pass..."); }
         }
         return null;
     }
 
-    private Student verifyStudent()
+    private Student VerifyStudent()
     {
-        string? response;
+        string? response = null;
         bool keep = true;
         Student student = null;
         while (keep)
         {
             Console.WriteLine("Insert Matricola");
-            if ((response = Console.ReadLine()) != null && response != "" && (student = school.FindStudent(response)) != null)
+            response = Console.ReadLine();
+            if ((student = school.FindStudent(response)) != null)
             {
-                keep = false;
+                return student;
             }
         }
-        return student;
+        return null;
     }
+
     public School school { get => _school; }
 
     public Client(School school)
@@ -153,12 +208,12 @@ public class Client
         Console.WriteLine("Are you a Student? (y/n)");
         string? response;
         Labs? lab = null;
-        int day = 0;
+        int? day = 0;
 
         if ((response = Console.ReadLine()) != null && response.ToLower() == "y")
         {
 
-            Student student = verifyStudent();
+            Student student = VerifyStudent();
 
             lab = SelectDay(ref day, lab);
 
@@ -172,11 +227,11 @@ public class Client
         }
         else
         {
-            Teacher teacher = verifyTeacher();
+            Teacher teacher = VerifyTeacher();
 
             SelectDay(ref day);
 
-            lab= SelectLaboratory(teacher, ref day);
+            lab = SelectLaboratory(teacher, (int)day);
             if (lab != null)
             {
                 lab.printLabUsage(teacher);
